@@ -12,7 +12,6 @@
 #define BUFFER 1024
 
 void printUsage(char *arg);
-void json(char *buffer);
 int DNSLookup(char* hostname , char* ip);
 void fixjson(char *buffer, int option);
 

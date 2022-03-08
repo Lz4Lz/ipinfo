@@ -15,4 +15,4 @@ Usage: ./ipinfo [-s ip] [-p ip] [-m ip] [-c ip] [-a ip]
  
  
  
-<h1>More coming soon probably, dk why i did this i was bored</h1>
+<h1>More coming soon probably, yes</h1>

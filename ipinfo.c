@@ -8,33 +8,21 @@
 #include <json-c/json.h>
 #include <string.h>
 
-#define HEADERLEN 100
 #define BUFFER 1024
+#define HEADERLEN 400
 
 void printUsage(char *arg);
 int DNSLookup(char* hostname , char* ip);
 void fixjson(char *buffer, int option);
 
 int main(int argc, char *argv[])
-{
-	//Adding an all options soon so thats why im using a struct.
-	struct headers
-	{
-		char ipinfo[HEADERLEN];
-		char privacy[HEADERLEN];
-		char asnAPI[HEADERLEN];
-		char company[HEADERLEN];
-		char abuse[HEADERLEN];
-	};
-
-	struct headers data;
-	
+{	
 	int opt, option = 0;
-
+	char header[HEADERLEN];
 	if (argc < 2)
 	{
 		option = 1;
-        strncpy(data.ipinfo, "GET / HTTP/1.1\r\nHost: www.ipinfo.io\r\n\r\n", 100);
+        strncpy(header, "GET / HTTP/1.1\r\nHost: www.ipinfo.io\r\n\r\n", 100);
 	}
 
 	int s;
@@ -50,34 +38,34 @@ int main(int argc, char *argv[])
 				option = 2;
                 ip = strndup(optarg, 20);
                 DNSLookup(ip, ip);
-               	snprintf(data.privacy, sizeof(struct headers), "POST /products/proxy-vpn-detection-api?value=%s&dataset=proxy-vpn-detection HTTP/1.1\r\nContent-Length: 0\r\nHost: www.ipinfo.io\r\n\r\n", ip);
+               	snprintf(header, sizeof(header), "POST /products/proxy-vpn-detection-api?value=%s&dataset=proxy-vpn-detection HTTP/1.1\r\nContent-Length: 0\r\nHost: www.ipinfo.io\r\n\r\n", ip);
 				break;
 
 			case 's':
 				option = 1;
                 ip = strndup(optarg, 20);
                 DNSLookup(ip, ip);
-                snprintf(data.ipinfo, sizeof(struct headers), "GET /%s/ HTTP/1.1\r\nHost: www.ipinfo.io\r\n\r\n", ip);
+                snprintf(header, sizeof(header), "GET /%s/ HTTP/1.1\r\nHost: www.ipinfo.io\r\n\r\n", ip);
 				break;
 
 			case 'm':
 				option = 3;
                 ip = strndup(optarg, 20);
                 DNSLookup(ip, ip);
-                snprintf(data.asnAPI, sizeof(struct headers), "POST /products/asn-api?value=%s HTTP/1.1\r\nContent-Length: 0\r\nHost: www.ipinfo.io\r\n\r\n", ip);
+                snprintf(header, sizeof(header), "POST /products/asn-api?value=%s HTTP/1.1\r\nContent-Length: 0\r\nHost: www.ipinfo.io\r\n\r\n", ip);
 				break;
 
 			case 'c':
 				option = 4;
                 ip = strndup(optarg, 20);
                 DNSLookup(ip, ip);
-                snprintf(data.company, sizeof(struct headers), "POST /products/ip-company-api?value=%s&dataset=company HTTP/1.1\r\nContent-Length: 0\r\nHost: www.ipinfo.io\r\n\r\n", ip);
+                snprintf(header, sizeof(header), "POST /products/ip-company-api?value=%s&dataset=company HTTP/1.1\r\nContent-Length: 0\r\nHost: www.ipinfo.io\r\n\r\n", ip);
 				break;
 			case 'a':
 				option = 5;
                 ip = strndup(optarg, 20);
                 DNSLookup(ip, ip);
-                snprintf(data.abuse, sizeof(struct headers), "POST /products/ip-abuse-contact-api?value=%s&dataset=abuse-contact HTTP/1.1\r\nContent-Length: 0\r\nHost: www.ipinfo.io\r\n\r\n", ip);
+                snprintf(header, sizeof(header), "POST /products/ip-abuse-contact-api?value=%s&dataset=abuse-contact HTTP/1.1\r\nContent-Length: 0\r\nHost: www.ipinfo.io\r\n\r\n", ip);
 				break;
 			case 'h':
 				printUsage(argv[0]);
@@ -104,27 +92,8 @@ int main(int argc, char *argv[])
 		perror("Error");
 		return 1;
 	}
-	/*I know i could have skipped this if i didnt use a sturct.*/
-	if (option == 1)
-	{
-		send(s, data.ipinfo, sizeof(struct headers), 0);
 
-	} else if (option == 2)
-	{
-		send(s, data.privacy, sizeof(struct headers), 0);
-		
-	} else if (option == 3)
-	{
-		send(s, data.asnAPI, sizeof(struct headers), 0);
-		
-	} else if (option == 4)
-	{
-		send(s, data.company, sizeof(struct headers), 0);
-	
-	} else if (option == 5)
-	{
-		send(s, data.abuse, sizeof(struct headers), 0);
-	} 
+	send(s, header, sizeof(header), 0);
 
 	recv(s, &buffer, sizeof(buffer), 0);
 	close(s);
@@ -245,6 +214,7 @@ void fixjson(char *buffer, int option)
     json_object_object_get_ex(abdata, "network", &abnetwork);
     json_object_object_get_ex(abdata, "phone", &phone);
 
+	
 	switch (option)
 	{
 		case 1:
@@ -265,6 +235,7 @@ void fixjson(char *buffer, int option)
 		        json_object_get_string(org),
 		        json_object_get_string(postal),
 		        json_object_get_string(timezone));
+		    json_object_put(parsed_json);
 			break;
 		case 2:
 		    printf("VPN: %s\n"
@@ -278,6 +249,8 @@ void fixjson(char *buffer, int option)
 		        json_object_get_string(relay),
 		        json_object_get_string(hosting),
 		        json_object_get_string(service));
+		    json_object_put(parsed_json);
+		    json_object_put(privData);
 		    break;
 		case 3:
 		    printf("ASN: %s\n"
@@ -289,6 +262,8 @@ void fixjson(char *buffer, int option)
 		        json_object_get_string(domain),
 		        json_object_get_string(route),
 		        json_object_get_string(type));
+		    json_object_put(parsed_json);
+		    json_object_put(asnData);
 		    break;
 		case 4: //company details
 		    printf("Domain: %s\n"
@@ -298,6 +273,8 @@ void fixjson(char *buffer, int option)
 		        json_object_get_string(comname),
 		        json_object_get_string(network),
 		        json_object_get_string(comptype));
+		    json_object_put(parsed_json);
+		    json_object_put(compdata);
 		    break;
 		case 5:
 		    printf("Address: %s\n"
@@ -311,6 +288,8 @@ void fixjson(char *buffer, int option)
 		        json_object_get_string(abname),
 		        json_object_get_string(abnetwork),
 		        json_object_get_string(phone));
+		    json_object_put(parsed_json);
+		    json_object_put(abdata);
 		    break;
 		default:
 			printf("Unknown Error.\n");

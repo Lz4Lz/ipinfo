@@ -12,7 +12,3 @@ Usage: ./ipinfo [-s ip] [-p ip] [-m ip] [-c ip] [-a ip]
 	[-a ip] Abuse contact information
 	[-s ip] Search basic information about the IP, geoloc etc
 ```
- 
- 
- 
-<h1>More coming soon probably, yes</h1>

@@ -1,9 +1,6 @@
 # ipinfo
 Get information about an IP Adress, If its a VPN/Proxy/Tor/Relay/Service, Locations etc
 
-<h2>Only works on Unix based systems. So bye windows users</h2>
-
-
 ```
 Usage: ./ipinfo [-s ip] [-p ip] [-m ip] [-c ip] [-a ip]
 	[-p ip] Detects VPN/TOR/Service/Hosting/Relay
